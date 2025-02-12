@@ -3,169 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <title>Game Leaderboards</title>
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #a8a5e6;
-            --background: #f8f9fe;
-            --text-dark: #2d3436;
-            --text-light: #ffffff;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            --purple: #800080;
+            --dark-purple: #4b0082;
+            --transition-time: 0.4s;
         }
 
         body {
-            background: var(--background);
-            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(45deg, #000000, var(--dark-purple));
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 5%;
-            background: var(--text-light);
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .logo span {
-            color: var(--primary-color);
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .container {
-            margin-top: 80px;
-            padding: 2rem 5%;
+            position: relative;
+            height: 100vh;
         }
 
-        .section-title {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-
-        .players-table {
+        [data-page] {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: var(--text-light);
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            overflow-x: auto;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-time) cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            transform: translateY(20px);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
+        [data-page].active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+            transform: translateY(0);
         }
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
         }
 
-        th {
-            background: var(--primary-color);
-            color: var(--text-light);
+        .main-text {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin: 0 auto 2em;
+            max-width: 800px;
+            line-height: 1.3;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            color: ghostwhite;
         }
 
-        button {
-            margin-top: 1rem;
-            background: #e74c3c;
-            color: var(--text-light);
-            padding: 10px;
+        .button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: var(--purple);
+            color: white;
             border: none;
+            border-radius: 25px;
             cursor: pointer;
-            border-radius: 5px;
-            transition: var(--transition);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
-        button:hover {
-            background: #c0392b;
+        .button:hover {
+            background: var(--dark-purple);
+            transform: translateY(-2px);
+        }
+
+        .icons-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .icon {
+            width: clamp(100px, 20vw, 150px);
+            height: clamp(100px, 20vw, 150px);
+            background-size: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .icon:hover {
+            transform: scale(1.1);
+            border-color: var(--purple);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+           /* Add to existing video CSS */
+        #videoPlayer {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: black;
+        }
+
+        .leaderboard {
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 40px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .game-leaderboard {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .game-leaderboard.active {
+            display: block;
+        }
+
+        .game-leaderboard h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            color: var(--purple);
+            text-shadow: 0 0 10px rgba(128, 0, 128, 0.5);
+            color: navajowhite;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .leaderboard-list li {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .leaderboard-list li:hover {
+            transform: translateX(10px);
+            background: rgba(128, 0, 128, 0.1);
+        }
+
+        .leaderboard-list li span:first-child {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .leaderboard-list li span:last-child {
+            color: #00ff88;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+        }
+
+        .leaderboard-list li:nth-child(1) span:last-child { color: #ffd700; }
+        .leaderboard-list li:nth-child(2) span:last-child { color: #c0c0c0; }
+        .leaderboard-list li:nth-child(3) span:last-child { color: #cd7f32; }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+        }
+
+        .loader {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--purple);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1 class="logo">Tournament<span>Hub</span></h1>
-    </header>
-
-    <main class="container">
-        <section id="players">
-            <h2 class="section-title">Registered Players</h2>
-            <div class="players-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Player Name</th>
-                            <th>Team</th>
-                            <th>Game ID</th>
-                        </tr>
-                    </thead>
-                    <tbody id="playerList">
-                        <tr><td colspan="4">No players registered yet.</td></tr>
-                    </tbody>
-                </table>
+    <div class="container">
+        <!-- Main Page -->
+        <div data-page="main" class="active">
+            <div class="main-content">
+                <h1 class="main-text">Join The Leaderboard For Entry Discount and In-Game Buffs!</h1>
+                <button class="button" onclick="showPage('icons')">See Leaderboard</button>
             </div>
-            <button id="clearPlayers">Clear Player Data</button>
-        </section>
-    </main>
+        </div>
+
+        <!-- Icons Page -->
+        <div data-page="icons">
+            <button class="button back-button" onclick="showPage('main')">← Back</button>
+            <div class="icons-page">
+                <div class="icon" data-game="pubg" style="background-image: url('pubg-icon.jpg')"></div>
+                <div class="icon" data-game="ff" style="background-image: url('ff-icon.jpg')"></div>
+                <div class="icon" data-game="ml" style="background-image: url('ml-icon.jpg')"></div>
+            </div>
+        </div>
+
+        <!-- Video Page -->
+        <div data-page="video">
+            <video id="videoPlayer"></video>
+        </div>
+
+        <!-- Leaderboard Page -->
+        <div data-page="leaderboard">
+            <button class="button back-button" onclick="showPage('icons')">← Back</button>
+            <div class="leaderboard">
+                <!-- PUBG Leaderboard -->
+                <div class="game-leaderboard" data-game="pubg">
+                    <h1>PUBG Leaderboard</h1>
+                    <ul class="leaderboard-list">
+                        <li><span>TEAM TCX</span><span>5% Discount</span></li>
+
+                    </ul>
+                </div>
+
+                <!-- Free Fire Leaderboard -->
+                <div class="game-leaderboard" data-game="ff">
+                    <h1>Free Fire Leaderboard</h1>
+                    <ul class="leaderboard-list">
+                        <li><span>JNK LEGEND</span><span>5% Discount</span></li>
+                        <li><span>xSoulBabe</span><span>2% Discount</span></li>
+
+                    </ul>
+                </div>
+
+                <!-- Mobile Legends Leaderboard -->
+                <div class="game-leaderboard" data-game="ml">
+                    <h1>Mobile Legends Leaderboard</h1>
+                    <ul class="leaderboard-list">
+                        <li><span>No Tournament Hosted</span><span>No Buffs</span></li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="loader"></div>
+    </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            loadPlayers();
+        let currentGame = '';
+        const loader = document.querySelector('.loader');
+        const video = document.getElementById('videoPlayer');
 
-            document.getElementById("clearPlayers").addEventListener("click", function () {
-                if (confirm("Are you sure you want to delete all player data?")) {
-                    localStorage.removeItem("players");
-                    loadPlayers();
+        function showPage(pageId) {
+            document.querySelectorAll('[data-page]').forEach(page => {
+                if (page.classList.contains('active')) {
+                    // Reset video when leaving video page
+                    if (page.dataset.page === 'video') {
+                        video.pause();
+                        video.currentTime = 0;
+                        video.src = '';
+                        video.onended = null;
+                    }
+                    page.classList.remove('active');
                 }
+            });
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+        }
+
+        document.querySelectorAll('.icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                currentGame = e.target.dataset.game;
+                playVideo(currentGame);
             });
         });
 
-        function loadPlayers() {
-            let playerList = document.getElementById("playerList");
-            let players = JSON.parse(localStorage.getItem("players")) || [];
-
-            playerList.innerHTML = "";
-            if (players.length === 0) {
-                playerList.innerHTML = "<tr><td colspan='4'>No players registered yet.</td></tr>";
-                return;
+        async function playVideo(game) {
+            showLoader();
+            
+            try {
+                // Reset video before loading new source
+                video.pause();
+                video.currentTime = 0;
+                video.src = `${game}.mp4`;
+                video.load();
+                
+                await video.play();
+                showPage('video');
+                video.onended = () => loadLeaderboard(game);
+            } catch (error) {
+                console.error('Video error:', error);
+                loadLeaderboard(game);
+            } finally {
+                hideLoader();
             }
-
-            players.forEach((player, index) => {
-                let row = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${player.name}</td>
-                        <td>${player.team}</td>
-                        <td>${player.gameID}</td>
-                    </tr>
-                `;
-                playerList.innerHTML += row;
-            });
         }
-    </script>
 
+        function loadLeaderboard(game) {
+            showLoader();
+            // Hide all leaderboards
+            document.querySelectorAll('.game-leaderboard').forEach(lb => {
+                lb.classList.remove('active');
+            });
+            // Show selected game's leaderboard
+            const leaderboard = document.querySelector(`.game-leaderboard[data-game="${game}"]`);
+            if (leaderboard) {
+                leaderboard.classList.add('active');
+            }
+            showPage('leaderboard');
+            hideLoader();
+        }
+
+        function showLoader() {
+            loader.style.display = 'block';
+        }
+
+        function hideLoader() {
+            loader.style.display = 'none';
+        }
+
+        // Initialize video error handling
+        document.getElementById('videoPlayer').addEventListener('error', () => {
+            loadLeaderboard(currentGame);
+        });
+    </script>
 </body>
 </html>

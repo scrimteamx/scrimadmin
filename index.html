@@ -3,612 +3,554 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Surprise!</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Legit Trades – Lucky Block Opener</title>
     <style>
-        /* General Setup */
+        /*
+        README:
+        This is a single-file web application. To deploy, simply host this HTML file on any static hosting service
+        such as GitHub Pages, Vercel, Netlify, or a simple web server. No build process or dependencies are required.
+        The lucky block image is embedded as a Base64 URI to maintain the single-file structure.
+        */
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap');
+
         :root {
-            --text-color: #ffffff;
-            --background-color: #000000;
-            --pink-color: #ff79c6;
-            --red-color: #ff5555;
-            --input-bg-color: #282a36;
-            --input-border-color: #44475a;
-            --button-bg-color: #50fa7b;
-            --button-text-color: #282a36;
+            --glow-purple: #a855f7;
+            --glow-gold: #facc15;
+            --glow-cyan: #22d3ee;
+            --glow-grey: #9ca3af;
+            --bg-color: #0c0a09;
         }
 
-        * {
-            box-sizing: border-box;
+        /* --- Base Setup --- */
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            overflow: hidden; /* Prevent scrollbars from canvas/animations */
         }
 
         body {
-            font-family: 'Press Start 2P', cursive;
-            color: var(--text-color);
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             text-align: center;
-            overflow: hidden;
-            padding: 1rem;
-            
-            /* Initial background is black */
-            background-color: var(--background-color);
-            transition: background-color 1.5s ease;
         }
 
-        /* Live Gradient Background for the final stage */
-        .final-background {
-            background: linear-gradient(270deg, #8a2be2, #8b0000);
-            background-size: 400% 400%;
-            animation: gradient-animation 15s ease infinite;
-        }
-        
-        @keyframes gradient-animation {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Start Overlay */
-        #start-overlay {
+        /* --- Futuristic Background --- */
+        #particle-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--background-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            cursor: pointer;
+            z-index: -1;
+            opacity: 0.5;
         }
 
-        #start-button {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1.5rem;
-            padding: 20px 40px;
-            color: var(--button-text-color);
-            background-color: var(--button-bg-color);
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            box-shadow: 0 0 20px var(--button-bg-color);
-            animation: pulse-animation 2s infinite;
-        }
-
-        @keyframes pulse-animation {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Main Container */
+        /* --- Main Container --- */
         .container {
-            width: 100%;
-            max-width: 600px;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px; /* For 3D transforms */
             z-index: 1;
         }
         
-        .container.hidden {
-            display: none;
+        /* --- Lucky Block Styling & Animation --- */
+        .lucky-block {
+            width: clamp(150px, 30vw, 250px);
+            cursor: pointer;
+            animation: float 6s ease-in-out infinite;
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+            filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.4));
         }
 
-        /* Text Elements & Transitions */
-        .message {
-            font-size: 1.5rem;
-            opacity: 0;
+        .lucky-block.opening {
+            animation: shake-and-open 1s ease-in-out forwards;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes shake-and-open {
+            0% { transform: translateY(0) scale(1) rotate(0deg); }
+            10%, 30% { transform: translateY(-5px) scale(1.05) rotate(-2deg); }
+            20%, 40% { transform: translateY(5px) scale(1.05) rotate(2deg); }
+            50% { transform: translateY(0) scale(1.1); }
+            100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+
+        /* --- Instruction Text --- */
+        .instruction-text {
+            margin-top: 2rem;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            letter-spacing: 1px;
+            animation: flicker 4s linear infinite;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4ade80, 0 0 20px #4ade80;
+            position: relative;
+        }
+
+        .instruction-text::after {
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            transform: translateY(-50%);
-            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
-            pointer-events: none; /* Allows clicks to pass through */
-        }
-
-        .message.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .message.fade-in {
-            opacity: 1;
-        }
-
-        .message.fade-up {
-            transform: translateY(-70%);
-            opacity: 1;
-        }
-        
-        .message.scale-in {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
-        }
-
-        /* Special Text Styling */
-        .surprise-text {
-            color: var(--pink-color);
-        }
-
-        .person-text {
-            color: var(--red-color);
-        }
-
-        .colour-text {
-            animation: rgb-text-animation 3s linear infinite;
-        }
-
-        @keyframes rgb-text-animation {
-            0% { color: #ff0000; }
-            15% { color: #ff7f00; }
-            30% { color: #ffff00; }
-            45% { color: #00ff00; }
-            60% { color: #0000ff; }
-            75% { color: #4b0082; }
-            90% { color: #ee82ee; }
-            100% { color: #ff0000; }
-        }
-
-        /* Question and Form Styling */
-        .question-form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            pointer-events: all;
-        }
-
-        .question-form input {
-            background-color: var(--input-bg-color);
-            border: 2px solid var(--input-border-color);
-            color: var(--text-color);
-            font-family: 'Press Start 2P', cursive;
-            padding: 15px;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .question-form input:focus {
-            border-color: var(--pink-color);
-            box-shadow: 0 0 10px var(--pink-color);
-        }
-        
-        .question-form input.shake {
-            animation: shake-animation 0.5s ease-in-out;
-        }
-        
-        @keyframes shake-animation {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-        }
-        
-        /* Final birthday message that scales and fades in */
-        #birthday-message {
-            z-index: 20;
-            position: fixed;
-            top: 50%;
+            bottom: -10px;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.5); /* Initial state for scale-in */
-            font-size: 1.8rem;
-            color: #ffffff; /* Text is now white */
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; /* Black stroke */
-            opacity: 0; /* Initial state hidden */
-            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
-            width: 90%;
-            pointer-events: none;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--glow-cyan), #4ade80);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--glow-cyan);
         }
 
-        #birthday-message.visible {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1); /* Visible state */
+        .instruction-text.holding::after {
+            animation: fill-progress 3s linear forwards;
         }
 
-        /* Heart animation for the final reveal */
-        .heart {
-            font-size: 24px;
-            position: absolute;
-            animation: float-up 3s ease-out forwards;
-            opacity: 1;
-            color: var(--pink-color);
-            pointer-events: none;
-            z-index: 99;
+        @keyframes fill-progress {
+            from { width: 0%; }
+            to { width: 100%; }
         }
 
-        @keyframes float-up {
-            to {
-                transform: translateY(-300px);
-                opacity: 0;
-            }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4ade80, 0 0 20px #4ade80; }
+            50.0% { opacity: 0.9; text-shadow: 0 0 5px #fff, 0 0 8px #fff, 0 0 12px #4ade80, 0 0 18px #4ade80; }
+            50.5% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4ade80, 0 0 20px #4ade80; }
+            51.0% { opacity: 0.8; text-shadow: none; }
+            51.5% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4ade80, 0 0 20px #4ade80; }
         }
         
-        /* Wandering images */
-        #wandering-images-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 15;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 2s 1s ease-in-out; /* Fade in after 1s */
-        }
-        #wandering-images-container.visible {
-            opacity: 1;
-        }
-
-        /* New circular orbit animation */
-        @keyframes circular-orbit {
-            0% { transform: rotate(0deg) translate(30vw) rotate(0deg); }
-            100% { transform: rotate(360deg) translate(30vw) rotate(-360deg); }
-        }
-        
-        .wandering-image {
-            position: absolute;
-            width: 150px;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: circular-orbit 30s linear infinite;
-        }
-
-        .wandering-image:nth-child(2) {
-            animation: circular-orbit 25s linear infinite;
-        }
-        .wandering-image:nth-child(3) {
-            animation: circular-orbit 35s linear infinite;
-        }
-
-        /* Progress Bar styles */
-        #progress-container {
-            display: none; /* Initially hidden */
-            flex-direction: column;
-            align-items: center;
-            width: 80%;
-            max-width: 400px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #progress-container.visible {
-            display: flex;
-        }
-        
-        #progress-text {
-            font-size: 1rem;
-            margin-bottom: 15px;
-            color: var(--text-color);
-            text-align: center;
-        }
-
-        #progress-bar-container {
-            width: 100%;
-            height: 20px;
-            background-color: var(--input-bg-color);
-            border: 2px solid var(--input-border-color);
-            border-radius: 10px;
+        /* --- Mobile 'E' Hold Button --- */
+        #mobile-hold-btn {
+            display: none; /* Hidden by default, shown on touch devices */
+            margin-top: 20px;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            user-select: none; /* Prevent text selection */
+            position: relative;
             overflow: hidden;
         }
 
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: var(--button-bg-color);
-            transition: width 0.3s ease-in-out;
+        #mobile-hold-btn::before {
+            content: 'E';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
         }
+        
+        #mobile-hold-btn .progress-circle {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: conic-gradient(var(--glow-cyan) 0%, #4ade80 0%, transparent 0%);
+            z-index: 1;
+        }
+
+        #mobile-hold-btn.holding .progress-circle { animation: fill-circle 3s linear forwards; }
+        @keyframes fill-circle { from { background: conic-gradient(var(--glow-cyan) 0%, #4ade80 0%, transparent 0%); } to { background: conic-gradient(var(--glow-cyan) 0%, #4ade80 100%, transparent 0%); } }
+        
+        @media (hover: none) and (pointer: coarse) { #mobile-hold-btn { display: block; } }
+
+
+        /* --- Result Display --- */
+        .result-container {
+            position: absolute; font-size: clamp(2rem, 6vw, 4rem); font-weight: bold; opacity: 0;
+            transform: scale(0.8); pointer-events: none;
+        }
+        .result-container.show { animation: glitch-reveal 0.8s forwards; }
+        .result-container.secret { color: var(--glow-purple); text-shadow: 0 0 10px var(--glow-purple), 0 0 20px var(--glow-purple), 0 0 40px var(--glow-purple); animation: glitch-reveal 0.8s forwards, result-glitch-purple 5s infinite; }
+        .result-container.plus-one { color: var(--glow-cyan); text-shadow: 0 0 10px var(--glow-cyan), 0 0 20px var(--glow-cyan), 0 0 40px var(--glow-cyan); }
+        .result-container.god { color: var(--glow-gold); text-shadow: 0 0 10px var(--glow-gold), 0 0 20px var(--glow-gold), 0 0 40px var(--glow-gold); animation: glitch-reveal 0.8s forwards, result-glitch-gold 5s infinite; }
+        .result-container.none { color: var(--glow-grey); text-shadow: 0 0 5px var(--glow-grey); animation: static-fade-in 1.5s forwards; }
+        @keyframes glitch-reveal { 0% { transform: scale(0.8) skew(-10deg); opacity: 0; } 20% { transform: scale(1.1) skew(10deg); text-shadow: 0 0 40px red; } 40% { transform: scale(0.9) skew(-5deg); text-shadow: 0 0 40px blue; } 60% { transform: scale(1.05) skew(5deg); } 100% { transform: scale(1) skew(0deg); opacity: 1; } }
+        @keyframes static-fade-in { 0% { opacity: 0; filter: blur(10px); } 20% { opacity: 0.3; filter: blur(5px); text-shadow: 0 0 1px #fff, 2px 2px 1px #fff; } 60% { opacity: 0.5; filter: blur(2px); } 100% { opacity: 1; filter: blur(0); } }
+        .result-container.secret::before, .result-container.secret::after, .result-container.god::before, .result-container.god::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow: hidden; }
+        .result-container.secret::before { left: 2px; text-shadow: -2px 0 var(--glow-cyan); animation: result-glitch-anim-1 2s infinite linear alternate-reverse; }
+        .result-container.secret::after { left: -2px; text-shadow: -2px 0 var(--glow-gold), 2px 2px var(--glow-cyan); animation: result-glitch-anim-2 2s infinite linear alternate-reverse; }
+        .result-container.god::before { left: 2px; text-shadow: -2px 0 #ff00c1; animation: result-glitch-anim-1 3s infinite linear alternate-reverse; }
+        .result-container.god::after { left: -2px; text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1; animation: result-glitch-anim-2 3s infinite linear alternate-reverse; }
+        @keyframes result-glitch-anim-1 { 0% { clip-path: inset(15% 0 86% 0); } 25% { clip-path: inset(53% 0 15% 0); } 50% { clip-path: inset(5% 0 57% 0); } 75% { clip-path: inset(77% 0 11% 0); } 100% { clip-path: inset(48% 0 48% 0); } }
+        @keyframes result-glitch-anim-2 { 0% { clip-path: inset(78% 0 8% 0); } 25% { clip-path: inset(18% 0 54% 0); } 50% { clip-path: inset(93% 0 2% 0); } 75% { clip-path: inset(45% 0 23% 0); } 100% { clip-path: inset(1% 0 95% 0); } }
+
+        /* --- Particle Burst Effect --- */
+        .particle { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; opacity: 0; }
+        .instruction-text.fading { transition: opacity 0.3s ease-in-out; opacity: 0; }
+        
+        /* --- Notification, Admin, and Logs UI --- */
+        #notification { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); padding: 1rem 2rem; background-color: rgba(12, 10, 9, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; color: #fff; z-index: 1000; font-size: clamp(1rem, 2.5vw, 1.2rem); transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        #notification.show { top: 25px; }
+        #notification.secret { border-top: 3px solid var(--glow-purple); }
+        #notification.plus-one { border-top: 3px solid var(--glow-cyan); }
+        #notification.god { border-top: 3px solid var(--glow-gold); }
+        #notification.none { border-top: 3px solid var(--glow-grey); }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .overlay.show { opacity: 1; visibility: visible; }
+
+        #admin-input {
+            padding: 1rem; font-size: 1.5rem; width: 250px; text-align: center;
+            background: rgba(255,255,255,0.1); border: 1px solid var(--glow-cyan); border-radius: 8px;
+            color: white; font-family: 'Inter', sans-serif; outline: none; box-shadow: 0 0 15px var(--glow-cyan);
+        }
+
+        #reward-logs-btn {
+            position: fixed; bottom: 20px; left: 20px; padding: 10px 20px;
+            font-family: 'Inter', sans-serif; font-size: 1rem; color: white;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glow-cyan);
+            border-radius: 8px; cursor: pointer; transition: background 0.3s, box-shadow 0.3s; z-index: 100;
+        }
+        #reward-logs-btn:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 10px var(--glow-cyan); }
+
+        #logs-container {
+            width: clamp(300px, 90vw, 500px); max-height: 80vh;
+            background: rgba(12, 10, 9, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex; flex-direction: column;
+        }
+        #logs-container h2 { margin-top: 0; color: var(--glow-cyan); }
+        #logs-list { overflow-y: auto; }
+        .log-item {
+            margin-bottom: 10px; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2);
+            display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--glow-grey);
+        }
+        .log-item .reward-text { font-weight: bold; font-size: 1.1rem; }
+        .log-item .reward-date { font-size: 0.8rem; color: #aaa; }
+        .log-item .secret { color: var(--glow-purple); text-shadow: 0 0 5px var(--glow-purple); }
+        .log-item.secret-border { border-left-color: var(--glow-purple); }
+        .log-item .plus-one { color: var(--glow-cyan); text-shadow: 0 0 5px var(--glow-cyan); }
+        .log-item.plus-one-border { border-left-color: var(--glow-cyan); }
+        .log-item .god { color: var(--glow-gold); text-shadow: 0 0 5px var(--glow-gold); }
+        .log-item.god-border { border-left-color: var(--glow-gold); }
+        .log-item .none { color: var(--glow-grey); }
+
     </style>
 </head>
 <body>
-    <div id="start-overlay">
-        <button id="start-button">Click to Begin</button>
+    <div id="notification"></div>
+    <div id="admin-overlay" class="overlay">
+        <input type="password" id="admin-input" placeholder="Enter Admin Code">
     </div>
-    
-    <div id="wandering-images-container"></div>
-
-    <audio id="next-sound" src="pop-up-notify-smooth-modern-332448.mp3"></audio>
-    <audio id="demo-song" src="demosong.mp3" loop></audio>
-
-    <main class="container" id="main-content">
-        <!-- Text messages that appear in sequence -->
-        <p id="text1" class="message hidden">hello zara</p>
-        <p id="text2" class="message hidden">welcome to riri's basement :D</p>
-        <p id="text3" class="message hidden">we have a <span class="surprise-text">surprise</span> for you</p>
-        <p id="text4" class="message hidden">firstly you need to answer this</p>
-        <p id="text5" class="message hidden">Great! now last question :D</p>
-
-        <!-- Question 1 -->
-        <div id="q1" class="message hidden question-form">
-            <label for="color-input">What is riri's fav <span class="colour-text">colour</span>?</label>
-            <input type="text" id="color-input" autocomplete="off">
+    <div id="logs-overlay" class="overlay">
+        <div id="logs-container">
+            <h2>Recent Rewards</h2>
+            <div id="logs-list"></div>
         </div>
-
-        <!-- Question 2 -->
-        <div id="q2" class="message hidden question-form">
-            <label for="song-input">What is riri's fav song?</label>
-            <input type="text" id="song-input" autocomplete="off">
-        </div>
-
-        <!-- Question 3 -->
-        <div id="q3" class="message hidden question-form">
-            <label for="person-input">Who is riri's fav <span class="person-text">person</span>?</label>
-            <input type="text" id="person-input" autocomplete="off">
-        </div>
-
-        <!-- Progress bar for "R" key presses -->
-        <div id="progress-container">
-            <p id="progress-text">Keep pressing 'R' until it reaches 100%!</p>
-            <div id="progress-bar-container">
-                <div id="progress-bar"></div>
-            </div>
-        </div>
+    </div>
+    <button id="reward-logs-btn">Reward Logs</button>
+    <canvas id="particle-canvas"></canvas>
+    <main class="container">
+        <img src="https://steal-a-brainrot.wiki/wp-content/uploads/2025/08/Secret-Lucky-Block.png"
+             onerror="this.onerror=null;this.src='https://placehold.co/250x250/0c0a09/4ade80?text=Error';"
+             alt="Lucky Block" class="lucky-block">
+        <p class="instruction-text" id="instruction-text">Hold 'E' to Open</p>
+        <button id="mobile-hold-btn">
+             <div class="progress-circle"></div>
+        </button>
+        <div class="result-container" id="result-container" data-text=""></div>
     </main>
-    
-    <p id="birthday-message"></p>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURATION: EDIT CORRECT ANSWERS HERE ---
-            const ANSWERS = {
-                color: ['dark red'], 
-                song: ['m.'], 
-                person: ['zara'] 
-            };
-            // ---------------------------------------------
-            let hasStartedFinalStage = false;
+            // --- DOM Element References ---
+            const luckyBlock = document.querySelector('.lucky-block');
+            const instructionText = document.getElementById('instruction-text');
+            const resultContainer = document.getElementById('result-container');
+            const body = document.body;
+            const mobileHoldBtn = document.getElementById('mobile-hold-btn');
+            const adminOverlay = document.getElementById('admin-overlay');
+            const adminInput = document.getElementById('admin-input');
+            const rewardLogsBtn = document.getElementById('reward-logs-btn');
+            const logsOverlay = document.getElementById('logs-overlay');
+            const logsList = document.getElementById('logs-list');
 
-            const elements = {
-                startOverlay: document.getElementById('start-overlay'),
-                startButton: document.getElementById('start-button'),
-                mainContent: document.getElementById('main-content'),
-                text1: document.getElementById('text1'),
-                text2: document.getElementById('text2'),
-                text3: document.getElementById('text3'),
-                text4: document.getElementById('text4'),
-                q1: document.getElementById('q1'),
-                q2: document.getElementById('q2'),
-                text5: document.getElementById('text5'),
-                q3: document.getElementById('q3'),
-                birthdayMessage: document.getElementById('birthday-message'),
-                wanderingImagesContainer: document.getElementById('wandering-images-container'),
-                progressContainer: document.getElementById('progress-container'),
-                progressBar: document.getElementById('progress-bar'),
-                inputs: {
-                    color: document.getElementById('color-input'),
-                    song: document.getElementById('song-input'),
-                    person: document.getElementById('person-input'),
-                },
-                sounds: {
-                    next: document.getElementById('next-sound'),
-                    song: document.getElementById('demo-song')
-                },
-            };
+            // --- State Management ---
+            let isHolding = false;
+            let canOpen = true;
+            let holdTimeout;
+            let cooldownInterval;
+            let guaranteedResult = sessionStorage.getItem('guaranteedResult') || null;
+            const HOLD_DURATION = 3000;
+            const COOLDOWN_DURATION = 24 * 60 * 60 * 1000;
+            const STORAGE_KEY = 'luckyBlockLastOpened';
+            const LOGS_STORAGE_KEY = 'luckyBlockRewardLogs';
 
-            const playSound = (sound) => {
-                sound.currentTime = 0;
-                sound.play().catch(e => console.log("Audio play failed.", e));
-            };
-
-            const delay = (ms) => new Promise(res => setTimeout(res, ms));
-
-            const showAndHide = async (el, fadeInClass, duration) => {
-                playSound(elements.sounds.next);
-                el.classList.remove('hidden');
-                el.classList.add(fadeInClass);
-                await delay(duration);
-                el.classList.remove(fadeInClass);
-                await delay(1500);
-                el.classList.add('hidden');
-            };
-
-            const showQuestion = (el, inputEl, correctAnswers, onCorrect) => {
-                playSound(elements.sounds.next);
-                el.classList.remove('hidden');
-                el.classList.add('fade-in');
-                inputEl.focus();
-
-                const handleAnswer = (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const userAnswer = inputEl.value.trim().toLowerCase();
-                        if (correctAnswers.includes(userAnswer)) {
-                            inputEl.removeEventListener('keydown', handleAnswer);
-                            el.classList.remove('fade-in');
-                            el.classList.add('hidden');
-                            setTimeout(onCorrect, 1500);
-                        } else {
-                            inputEl.classList.add('shake');
-                            setTimeout(() => inputEl.classList.remove('shake'), 500);
-                        }
-                    }
-                };
-                inputEl.addEventListener('keydown', handleAnswer);
-            };
-
-            const startWanderingImages = () => {
-                const imageUrls = [
-                    'https://scontent.fktm7-1.fna.fbcdn.net/v/t1.15752-9/543703657_675809498868716_971274930638720186_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=0024fc&_nc_ohc=23aUgEn-ngsQ7kNvwEaFreg&_nc_oc=AdnUWkTgb0dH5LM1PRN9UBiNWV4N_X-MuJZQ63f56t-9Gdv25NZk70eCVTiMv5MwmEw&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.fktm7-1.fna&oh=03_Q7cD3QFtWjEnZYWOeNwRRNSiyod5tZZIjyWfpT4sb0kQPmKhGw&oe=68ED0812',
-                    'https://scontent.fktm7-1.fna.fbcdn.net/v/t1.15752-9/542448254_755063277300541_3632971279804977357_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=0024fc&_nc_ohc=vVrdDAt3wLIQ7kNvwFkoyDg&_nc_oc=AdkAp_uR-sP-kVE0NenVwWSWPV8QKyGikqp66xqYF8AiIwSkIvUvct46UgrmYhemzOs&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.fktm7-1.fna&oh=03_Q7cD3QGvNG2FgToidGPryp1mzqVUeSIls4c0ALjsS9BYJntY1g&oe=68ED0753',
-                    'https://scontent.fktm7-1.fna.fbcdn.net/v/t1.15752-9/546524001_1527384091952502_7505986276446549636_n.jpg?stp=dst-jpg_s640x640_tt6&_nc_cat=108&ccb=1-7&_nc_sid=0024fc&_nc_ohc=AcZsTPib8ZEQ7kNvwEEbNCL&_nc_oc=Adlbe7Gl0P1J1nFK9VWzj5MxXzckouP1bbGc8HvjR7J-snV4X9j176lYLv1MVZ-6-OI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.fktm7-1.fna&oh=03_Q7cD3QERmG8UGogsRwERhO2toznA9ADKFHDdqv2d_MnigOEnWQ&oe=68ECF8A8 '
-                ];
-                const container = elements.wanderingImagesContainer;
-                
-                imageUrls.forEach((url, index) => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.className = 'wandering-image';
-                    container.appendChild(img);
-                });
-                container.classList.add('visible');
-            };
-
-            const createLoveAnimation = () => {
-                const loveEl = document.createElement('div');
-                loveEl.textContent = '❤️';
-                loveEl.classList.add('heart');
-                document.body.appendChild(loveEl);
-
-                // Random position
-                const startX = Math.random() * (window.innerWidth - 50) + 25;
-                const startY = Math.random() * (window.innerHeight - 50) + 25;
-                loveEl.style.left = `${startX}px`;
-                loveEl.style.top = `${startY}px`;
-
-                // Clean up after animation
-                loveEl.addEventListener('animationend', () => {
-                    loveEl.remove();
-                });
-            };
-
-            const startPressRGame = () => {
-                elements.mainContent.classList.remove('hidden');
-                elements.progressContainer.classList.add('visible');
-                let pressCount = 0;
-                const maxPresses = 20;
-
-                const handleKeyPress = (event) => {
-                    if (event.key === 'r' || event.key === 'R') {
-                        if (pressCount < maxPresses) {
-                            pressCount++;
-                            const progress = (pressCount / maxPresses) * 100;
-                            elements.progressBar.style.width = `${progress}%`;
-                            createLoveAnimation();
-                        }
-                        if (pressCount >= maxPresses) {
-                            document.removeEventListener('keydown', handleKeyPress);
-                            elements.progressContainer.classList.remove('visible');
-                            setTimeout(startFinalStage, 1000);
-                        }
-                    }
-                };
-                document.addEventListener('keydown', handleKeyPress);
-            };
+            // --- Audio Setup ---
+            const openingSoundData = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFlAz/9sQ8AAAAGFTEFNRyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALVElURDIAAAAuAAADU0VSVkVSIC0gU2VydmVyLCBDb25uZWN0aW9uLCBBY2Nlc3MsIFBvcnRhbCwgRmlsZQBEQVRFDAAACTMDMDIwNDIwNABUWVMAAAAJBTAyMDEyMDEyUwD/2xDsAQC4hfgof0sEUAAVHG4IMgAABRAAAM9YB5EAABhrBqgQoDIAAABgYf02AEACAADLEP8A/7YEgAABA0gAGmU1AAAEGgABWIcE2AQAgP+3BIAAATNIAB9lQAAAgpIAAViHBNAEAID/tgSAAAEZSAAa5c0AAAEIAAFYhwTYBACA/7YEgAABM0gAGuXNAAABCAABWIcE0AQAgP+3BIAAARNIABrlzQAAAQgAAViHBNAEAID/tgSAAAEYSAAYVc0AAAENAAFYhwTYBACA/7YEgAABGAgAFhXNAAABBgABWIcE0AQAgP+3BIAAARcIABS1zQAAAQoAAViHBNAEAID/tgSAAAEQCAAOVc0AAAEWAAFYhwTYBACA/7YEgAABDAgAC1XNAAABIAABWIcE0AQAgP+3BIAAARAIABRVzQAAASAAAViHBNAEAID/tgSAAAEaCAAAVc0AAAEMAAViHBNAEAID/tgSAAAEiCAADlc0AAAESAAViHBNAEAID/tgSAAAEaCAAOlc0AAAEbAAViHBNAEAID/tgSAAAEaCAAElc0AAAEgAAViHBNAEAID/tgSAAAEiCAADFc0AAAFKAAViHBNAEAID/tgSAAAF+CAAElc0AAAGEAAViHBNAEAID/tgSAAAFaCAADlc0AAAFTAAViHBNAEAID/tgSAAAFeCAAFFc0AAAGCAAViHBNAEAID/tgSAAAFCBwALlc0AAAGUAAViHBNAEAID/tgSAAAFGCAADlc0AAAGdAAViHBNAEAID/tgSAAAFIBAAC1c0AAAGsAAViHBNAEAID/tgSAAAFKCAAAlM0AAAGyAAViHBNAEAID/tgSAAAFOCAAAZc0AAAG8AAViHBNAEAID/tgSAAAFYCAABFc0AAAHMAAViHBNAEAID/tgSAAAFaCAAAlM0AAAHZAAViHBNAEAID/tgSAAAFeCAAAZc0AAAHoAAViHBNAEAID/tgSAAAFCBwABlc0AAAHsAAViHBNAEAID/tgSAAAFGCAAAlM0AAAH4AAViHBNAEAID/tgSAAAFIBAABFc0AAAIFAAViHBNAEAID/tgSAAAFKCAAAlM0AAAIKAAViHBNAEAID/tgSAAAFOCAAAZc0AAAITAAViHBNAEAID/tgSAAAFYCAABlc0AAAIVAAViHBNAEAID/tgSAAAFaCAAAlM0AAAIfAAViHBNAEAID/tgSAAAFeCAAAZc0AAAIoAAViHBNAEAID/tgSAAAFCBwABFc0AAAIqAAViHBNAEAID/tgSAAAFGCAAAlM0AAAIwAAViHBNAEAID/tgSAAAFIBAABFc0AAAI2AAViHBNAEAID/tgSAAAFKCAAAlM0AAAI9AAViHBNAEAID/tgSAAAFOCAAAZc0AAAJEAAF/9sQ8AAMPEFAAAAFTEFNRyQDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQURNSU4AAAFW//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFlAz/9sQ8AAAAGFTEFNRyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALVElURDIAAAAuAAADU0VSVkVSIC0gU2VydmVyLCBDb25uZWN0aW9uLCBBY2Nlc3MsIFBvcnRhbABEQVRFDAAACTMDMDIwNDIwNAAAAAAAAAA=';
+            const openingAudio = new Audio(openingSoundData);
+            openingAudio.volume = 0.7;
             
-            const fadeInAudio = (audioElement, duration) => {
-                const interval = 100; // ms
-                const increment = 1 / (duration / interval);
-                let volume = 0;
-                audioElement.volume = 0;
+            // --- Weighted Results ---
+            const results = [ { text: 'Secret', class: 'secret', weight: 1 }, { text: '+1 Opening', class: 'plus-one', weight: 2 }, { text: 'Brainrot God', class: 'god', weight: 10 }, { text: 'None', class: 'none', weight: 87 } ];
 
-                const fadeInterval = setInterval(() => {
-                    volume += increment;
-                    if (volume >= 1) {
-                        audioElement.volume = 1;
-                        clearInterval(fadeInterval);
+            // --- Functions ---
+            function showNotification(resultOrText, typeClass = '') {
+                const notification = document.getElementById('notification');
+                if (typeof resultOrText === 'object') {
+                    notification.textContent = `You received: ${resultOrText.text}`;
+                    notification.className = 'notification show';
+                    notification.classList.add(resultOrText.class);
+                } else {
+                    notification.textContent = resultOrText;
+                    notification.className = `notification show ${typeClass}`;
+                }
+                setTimeout(() => notification.classList.remove('show'), 4000);
+            }
+
+            function saveRewardLog(result) {
+                let logs = JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+                const newLog = {
+                    text: result.text,
+                    class: result.class,
+                    date: new Date().toISOString()
+                };
+                logs.unshift(newLog);
+                logs = logs.slice(0, 5); // Keep only the latest 5
+                localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
+            }
+
+            function startResultRoulette(finalResult) {
+                const rouletteItems = [ { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' }, { text: 'None', class: 'none' }, { text: 'Brainrot God', class: 'god' }, { text: '+1 Opening', class: 'plus-one' }, { text: 'Secret', class: 'secret' } ];
+                let currentIndex = 0;
+                const intervalDuration = 180;
+                const rouletteInterval = setInterval(() => {
+                    if (currentIndex < rouletteItems.length) {
+                        const currentItem = rouletteItems[currentIndex];
+                        resultContainer.textContent = currentItem.text;
+                        resultContainer.dataset.text = currentItem.text;
+                        resultContainer.className = 'result-container show';
+                        resultContainer.classList.add(currentItem.class);
+                        currentIndex++;
                     } else {
-                        audioElement.volume = volume;
+                        clearInterval(rouletteInterval);
+                        resultContainer.textContent = finalResult.text;
+                        resultContainer.dataset.text = finalResult.text;
+                        resultContainer.className = 'result-container';
+                        resultContainer.classList.add(finalResult.class, 'show');
+                        showNotification(finalResult);
+                        saveRewardLog(finalResult);
+                        if (finalResult.class !== 'plus-one') {
+                            localStorage.setItem(STORAGE_KEY, Date.now().toString());
+                            setTimeout(resetUI, 4000);
+                        } else {
+                            setTimeout(() => location.reload(), 3000);
+                        }
                     }
-                }, interval);
-            };
+                }, intervalDuration);
+            }
 
-            const startFinalStage = () => {
-                if (hasStartedFinalStage) return;
-                hasStartedFinalStage = true;
-                elements.mainContent.classList.add('hidden');
-                document.body.classList.add('final-background');
-                
-                // Start music at 45 seconds and fade in over 5 seconds
-                elements.sounds.song.currentTime = 45;
-                elements.sounds.song.play().catch(e => console.log("Song play failed.", e));
-                fadeInAudio(elements.sounds.song, 5000);
-
-                startWanderingImages();
-                startBirthdaySequence();
-            };
+            function resetUI() {
+                resultContainer.className = 'result-container';
+                luckyBlock.style.display = 'block';
+                luckyBlock.classList.remove('opening');
+                instructionText.style.visibility = 'visible';
+                instructionText.classList.remove('fading', 'holding');
+                mobileHoldBtn.classList.remove('holding');
+                checkCooldown();
+            }
             
-            const startBirthdaySequence = async () => {
-                const messages = [
-                    "I am so lucky to have youu",
-                    "Thank you for alwaysys understanding meeeee",
-                    "Im sorry if i make you sad sometime D:",
-                    "I really love you YAURRRR",
-                    "and lastly",
-                    "HAPPY BIRTHDAY ZARURURU",
-                    "ILYSM!!!",
-                    "credits to @yuvinsane pls",
-                    "Happy birthday zara!"
-                ];
+            function updateCooldownTimer(endTime) {
+                clearInterval(cooldownInterval);
+                cooldownInterval = setInterval(() => {
+                    const timeLeft = endTime - Date.now();
+                    if (timeLeft <= 0) {
+                        clearInterval(cooldownInterval);
+                        canOpen = true;
+                        instructionText.textContent = `Hold 'E' to Open`;
+                        instructionText.style.animation = '';
+                        instructionText.style.textShadow = '';
+                        return;
+                    }
+                    const hours = String(Math.floor((timeLeft / (1000 * 60 * 60)) % 24)).padStart(2,'0');
+                    const minutes = String(Math.floor((timeLeft / 1000 / 60) % 60)).padStart(2, '0');
+                    const seconds = String(Math.floor((timeLeft / 1000) % 60)).padStart(2, '0');
+                    instructionText.textContent = `Come back in ${hours}:${minutes}:${seconds}`;
+                }, 1000);
+            }
 
-                const birthdayMessageEl = elements.birthdayMessage;
-                birthdayMessageEl.classList.remove('hidden');
-
-                for (const msg of messages) {
-                    birthdayMessageEl.textContent = msg;
-                    birthdayMessageEl.classList.add('visible');
-                    await delay(3000); // Stay for 3 seconds
-                    birthdayMessageEl.classList.remove('visible');
-                    await delay(1500); // Wait for fade out transition
+            function checkCooldown() {
+                const lastOpened = localStorage.getItem(STORAGE_KEY);
+                if (lastOpened) {
+                    const timeSinceLastOpen = Date.now() - parseInt(lastOpened, 10);
+                    if (timeSinceLastOpen < COOLDOWN_DURATION) {
+                        canOpen = false;
+                        const endTime = parseInt(lastOpened, 10) + COOLDOWN_DURATION;
+                        updateCooldownTimer(endTime);
+                        instructionText.style.animation = 'none';
+                        instructionText.style.textShadow = '0 0 8px var(--glow-grey)';
+                    } else {
+                        canOpen = true;
+                         instructionText.textContent = `Hold 'E' to Open`;
+                    }
                 }
-                
-                // Gracefully fade out everything to black
-                elements.wanderingImagesContainer.style.opacity = '0';
-                await delay(2000);
-            };
+            }
 
-            const startSequence = async () => {
-                await delay(500);
-                await showAndHide(elements.text1, 'fade-in', 3000);
-                await showAndHide(elements.text2, 'fade-up', 3000);
-                await showAndHide(elements.text3, 'fade-in', 3000);
-                await showAndHide(elements.text4, 'fade-in', 3000);
+            function determineResult() {
+                if (guaranteedResult) {
+                    const result = results.find(r => r.class === guaranteedResult);
+                    guaranteedResult = null;
+                    sessionStorage.removeItem('guaranteedResult');
+                    return result || results[results.length - 1];
+                }
+                const totalWeight = results.reduce((sum, result) => sum + result.weight, 0);
+                let random = Math.random() * totalWeight;
+                for (const result of results) {
+                    if (random < result.weight) return result;
+                    random -= result.weight;
+                }
+                return results[results.length - 1];
+            }
 
-                showQuestion(elements.q1, elements.inputs.color, ANSWERS.color, () => {
-                    showQuestion(elements.q2, elements.inputs.song, ANSWERS.song, async () => {
-                        await showAndHide(elements.text5, 'fade-in', 3000);
-                        showQuestion(elements.q3, elements.inputs.person, ANSWERS.person, () => {
-                           setTimeout(startPressRGame, 1000);
-                        });
+            function createParticleBurst() {
+                const particleCount = 80;
+                const colors = ['var(--glow-purple)', 'var(--glow-gold)', 'var(--glow-cyan)', '#fff'];
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    body.appendChild(particle);
+                    const size = Math.random() * 6 + 2;
+                    const angle = Math.random() * 360;
+                    const radius = Math.random() * 150 + 50;
+                    const xStart = window.innerWidth / 2;
+                    const yStart = window.innerHeight / 2;
+                    const xEnd = xStart + radius * Math.cos(angle * Math.PI / 180);
+                    const yEnd = yStart + radius * Math.sin(angle * Math.PI / 180);
+                    particle.style.width = `${size}px`; particle.style.height = `${size}px`;
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.left = `${xStart}px`; particle.style.top = `${yStart}px`;
+                    particle.animate([ { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }, { transform: `translate(${xEnd - xStart}px, ${yEnd - yStart}px) scale(0)`, opacity: 0 } ], { duration: Math.random() * 800 + 400, easing: 'cubic-bezier(0.1, 0.7, 1.0, 0.1)', fill: 'forwards' });
+                    setTimeout(() => particle.remove(), 1200);
+                }
+            }
+
+            function openBlock() {
+                luckyBlock.classList.add('opening');
+                instructionText.style.visibility = 'hidden';
+                openingAudio.play().catch(error => console.error("Audio playback failed.", error));
+                createParticleBurst();
+                luckyBlock.addEventListener('animationend', () => {
+                    luckyBlock.style.display = 'none';
+                    const result = determineResult();
+                    startResultRoulette(result);
+                }, { once: true });
+            }
+
+            function handlePressStart(e) {
+                e.preventDefault();
+                if (isHolding || !canOpen) return;
+                isHolding = true;
+                instructionText.classList.add('holding', 'fading');
+                mobileHoldBtn.classList.add('holding');
+                holdTimeout = setTimeout(openBlock, HOLD_DURATION);
+            }
+
+            function handlePressEnd(e) {
+                 e.preventDefault();
+                if (!canOpen) return;
+                isHolding = false;
+                clearTimeout(holdTimeout);
+                instructionText.classList.remove('holding', 'fading');
+                mobileHoldBtn.classList.remove('holding');
+            }
+            
+            function handleAdminMacro(e) {
+                if(e.altKey && e.key.toLowerCase() === 'l') {
+                    e.preventDefault();
+                    adminOverlay.classList.add('show');
+                    adminInput.focus();
+                }
+            }
+            
+            function handleAdminInput(e) {
+                const code = e.target.value;
+                let notificationText = '', notificationClass = 'plus-one', guaranteeType = null;
+                switch(code) {
+                    case '9154': notificationText = 'Lucky Block has been reset!'; break;
+                    case '0990': notificationText = 'Next opening will be Secret!'; notificationClass = 'secret'; guaranteeType = 'secret'; break;
+                    case '9009': notificationText = 'Next opening will be +1 Opening!'; notificationClass = 'plus-one'; guaranteeType = 'plus-one'; break;
+                    default: return;
+                }
+                localStorage.removeItem(STORAGE_KEY);
+                if(guaranteeType) { sessionStorage.setItem('guaranteedResult', guaranteeType); }
+                adminOverlay.classList.remove('show');
+                e.target.value = '';
+                showNotification(notificationText, notificationClass);
+                setTimeout(() => window.location.reload(), 1500);
+            }
+
+            function displayRewardLogs() {
+                logsList.innerHTML = ''; // Clear previous logs
+                const logs = JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+                if (logs.length === 0) {
+                    logsList.innerHTML = '<p>No rewards logged yet.</p>';
+                } else {
+                    logs.forEach(log => {
+                        const logItem = document.createElement('div');
+                        logItem.className = `log-item ${log.class}-border`;
+
+                        const rewardText = document.createElement('span');
+                        rewardText.className = `reward-text ${log.class}`;
+                        rewardText.textContent = log.text;
+
+                        const rewardDate = document.createElement('span');
+                        rewardDate.className = 'reward-date';
+                        rewardDate.textContent = new Date(log.date).toLocaleString();
+
+                        logItem.appendChild(rewardText);
+                        logItem.appendChild(rewardDate);
+                        logsList.appendChild(logItem);
                     });
-                });
-            };
-            
-            elements.startButton.addEventListener('click', () => {
-                // Request fullscreen and hide overlay
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen mode: ${err.message}`);
-                });
-                elements.startOverlay.style.display = 'none';
-                
-                // Attempt to unlock audio context on first user interaction
-                elements.sounds.next.play().then(() => elements.sounds.next.pause());
-                elements.sounds.song.play().then(() => elements.sounds.song.pause());
-                startSequence();
-            }, { once: true });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.altKey && (event.key === 'r' || event.key === 'R')) {
-                    event.preventDefault(); // Prevents default browser actions
-                    startFinalStage();
                 }
-            });
+                logsOverlay.classList.add('show');
+            }
+
+            // --- Event Listeners ---
+            window.addEventListener('keydown', handleAdminMacro);
+            adminInput.addEventListener('input', handleAdminInput);
+            adminOverlay.addEventListener('click', (e) => { if (e.target === adminOverlay) adminOverlay.classList.remove('show'); });
+
+            rewardLogsBtn.addEventListener('click', displayRewardLogs);
+            logsOverlay.addEventListener('click', (e) => { if (e.target === logsOverlay) logsOverlay.classList.remove('show'); });
+
+            window.addEventListener('keydown', (e) => { if(e.key.toLowerCase() === 'e') handlePressStart(e) });
+            window.addEventListener('keyup', (e) => { if(e.key.toLowerCase() === 'e') handlePressEnd(e) });
+            mobileHoldBtn.addEventListener('touchstart', handlePressStart, { passive: false });
+            mobileHoldBtn.addEventListener('touchend', handlePressEnd, { passive: false });
+            
+            // --- Background Particle Animation ---
+            const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
+            let particlesArray;
+            function setupCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 2 + 0.5; this.speedX = Math.random() * 1 - 0.5; this.speedY = Math.random() * 1 - 0.5; this.color = `rgba(74, 222, 128, ${Math.random()})`; } update() { if (this.x > canvas.width || this.x < 0) this.speedX *= -1; if (this.y > canvas.height || this.y < 0) this.speedY *= -1; this.x += this.speedX; this.y += this.speedY; } draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); } }
+            function initParticles() { particlesArray = []; let n = (canvas.height * canvas.width) / 9000; for (let i = 0; i < n; i++) { particlesArray.push(new Particle()); } }
+            function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); particlesArray[i].draw(); } requestAnimationFrame(animateParticles); }
+            window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
+
+            // --- Initial Setup ---
+            checkCooldown(); setupCanvas(); initParticles(); animateParticles();
         });
     </script>
 </body>
 </html>
+
